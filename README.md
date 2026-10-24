@@ -7,7 +7,7 @@ Part of [NothingEats](https://github.com/slashncode/nothingeats).
 ## Create a service
 
 1. **Use this template** on GitHub → `nothingeats-<context>-service`, clone it next to the other repos.
-2. `scripts/init-service.sh <context>` renames packages, project and image.
+2. `scripts/init-service.sh <context>` renames packages, project and image, and switches on the image push in CI.
 3. Replace the `Item` example with the real domain.
 
 ## Modules
