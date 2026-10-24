@@ -5,6 +5,7 @@ import io.github.slashncode.nothingeats.example.domain.Item
 import io.github.slashncode.nothingeats.example.domain.ItemId
 import io.github.slashncode.nothingeats.example.domain.ItemName
 import io.github.slashncode.nothingeats.example.domain.ItemNameTaken
+import io.github.slashncode.nothingeats.platform.core.analytics.ProductAnalytics
 import io.github.slashncode.nothingeats.platform.core.error.AppError
 import io.github.slashncode.nothingeats.platform.core.error.ErrorCode
 import io.github.slashncode.nothingeats.platform.core.error.Violation
@@ -14,8 +15,12 @@ import java.time.temporal.ChronoUnit
 class CreateItem(
     private val items: ItemRepository,
     private val clock: Clock,
+    private val analytics: ProductAnalytics,
 ) {
-    suspend operator fun invoke(name: String): Item {
+    suspend operator fun invoke(
+        name: String,
+        createdBy: String,
+    ): Item {
         val item =
             Item(
                 id = ItemId.random(),
@@ -28,6 +33,8 @@ class CreateItem(
         } catch (e: ItemNameTaken) {
             throw AppError.Conflict(ErrorCode("ITEM_NAME_TAKEN"), e.message ?: "Name taken", e)
         }
+        // Server-side events are the source of truth for business facts; the browser only tracks intent.
+        analytics.capture("item_created", mapOf("item_id" to item.id.toString()), distinctId = createdBy)
         return item
     }
 

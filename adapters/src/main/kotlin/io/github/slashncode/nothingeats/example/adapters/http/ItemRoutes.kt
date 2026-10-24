@@ -9,6 +9,7 @@ import io.github.slashncode.nothingeats.platform.core.error.ErrorCode
 import io.github.slashncode.nothingeats.platform.http.HttpRoutes
 import io.github.slashncode.nothingeats.platform.http.auth.authenticated
 import io.github.slashncode.nothingeats.platform.http.auth.public
+import io.github.slashncode.nothingeats.platform.http.auth.user
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
@@ -43,7 +44,7 @@ class ItemRoutes(
         route("/api/example/v1/items") {
             authenticated {
                 post {
-                    val item = createItem(call.receive<CreateItemRequest>().name)
+                    val item = createItem(call.receive<CreateItemRequest>().name, createdBy = call.user.id)
                     call.response.header(HttpHeaders.Location, "/api/example/v1/items/${item.id}")
                     call.respond(HttpStatusCode.Created, item.toResponse())
                 }

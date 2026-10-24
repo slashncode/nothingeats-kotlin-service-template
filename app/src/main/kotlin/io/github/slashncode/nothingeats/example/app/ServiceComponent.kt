@@ -5,17 +5,23 @@ import io.github.slashncode.nothingeats.example.adapters.persistence.ExposedItem
 import io.github.slashncode.nothingeats.example.application.CreateItem
 import io.github.slashncode.nothingeats.example.application.GetItem
 import io.github.slashncode.nothingeats.example.application.ItemRepository
+import io.github.slashncode.nothingeats.platform.core.analytics.ProductAnalytics
 import io.github.slashncode.nothingeats.platform.core.lifecycle.HealthCheck
 import io.github.slashncode.nothingeats.platform.core.lifecycle.HealthChecks
 import io.github.slashncode.nothingeats.platform.core.lifecycle.LifecycleComponent
 import io.github.slashncode.nothingeats.platform.core.lifecycle.LifecycleManager
 import io.github.slashncode.nothingeats.platform.core.lifecycle.Readiness
 import io.github.slashncode.nothingeats.platform.core.run.ServiceRunner
+import io.github.slashncode.nothingeats.platform.http.ExceptionReporter
+import io.github.slashncode.nothingeats.platform.http.HttpExtension
 import io.github.slashncode.nothingeats.platform.http.HttpRoutes
 import io.github.slashncode.nothingeats.platform.http.HttpServer
 import io.github.slashncode.nothingeats.platform.http.auth.JwtAuth
 import io.github.slashncode.nothingeats.platform.persistence.FlywayMigrations
 import io.github.slashncode.nothingeats.platform.persistence.PostgresDatabase
+import io.github.slashncode.nothingeats.platform.posthog.PostHogAnalytics
+import io.github.slashncode.nothingeats.platform.posthog.PostHogExceptionReporter
+import io.github.slashncode.nothingeats.platform.posthog.PostHogHttpExtension
 import me.tatarka.inject.annotations.Component
 import me.tatarka.inject.annotations.IntoSet
 import me.tatarka.inject.annotations.Provides
@@ -65,7 +71,27 @@ abstract class ServiceComponent(
         checks: Set<HealthCheck>,
         routes: Set<HttpRoutes>,
         auth: JwtAuth,
-    ): HttpServer = HttpServer(config.http, readiness, HealthChecks(checks), routes, auth)
+        extensions: Set<HttpExtension>,
+        exceptionReporter: ExceptionReporter,
+    ): HttpServer = HttpServer(config.http, readiness, HealthChecks(checks), routes, auth, extensions, exceptionReporter)
+
+    @ServiceScope
+    @Provides
+    fun postHog(): PostHogAnalytics = PostHogAnalytics(config.posthog)
+
+    @Provides
+    fun analytics(postHog: PostHogAnalytics): ProductAnalytics = postHog
+
+    @Provides
+    fun exceptionReporter(analytics: ProductAnalytics): ExceptionReporter = PostHogExceptionReporter(analytics)
+
+    @IntoSet
+    @Provides
+    fun postHogLifecycle(postHog: PostHogAnalytics): LifecycleComponent = postHog
+
+    @IntoSet
+    @Provides
+    fun postHogHttp(): HttpExtension = PostHogHttpExtension()
 
     @ServiceScope
     @Provides
@@ -101,7 +127,8 @@ abstract class ServiceComponent(
     fun createItem(
         items: ItemRepository,
         clock: Clock,
-    ): CreateItem = CreateItem(items, clock)
+        analytics: ProductAnalytics,
+    ): CreateItem = CreateItem(items, clock, analytics)
 
     @Provides
     fun getItem(items: ItemRepository): GetItem = GetItem(items)

@@ -8,6 +8,7 @@ import io.github.slashncode.nothingeats.platform.core.lifecycle.Readiness
 import io.github.slashncode.nothingeats.platform.http.PlatformJson
 import io.github.slashncode.nothingeats.platform.http.Problem
 import io.github.slashncode.nothingeats.platform.http.installPlatform
+import io.github.slashncode.nothingeats.platform.testing.RecordingAnalytics
 import io.github.slashncode.nothingeats.platform.testing.TestTokens
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -31,7 +32,7 @@ private val tokens = TestTokens()
 private fun itemsApi(block: suspend ApplicationTestBuilder.() -> Unit) =
     testApplication {
         val items = InMemoryItemRepository()
-        val routes = ItemRoutes(CreateItem(items, Clock.systemUTC()), GetItem(items))
+        val routes = ItemRoutes(CreateItem(items, Clock.systemUTC(), RecordingAnalytics()), GetItem(items))
         application {
             installPlatform(Readiness(), HealthChecks(emptySet()), tokens.jwtAuth)
             routing { with(routes) { register() } }

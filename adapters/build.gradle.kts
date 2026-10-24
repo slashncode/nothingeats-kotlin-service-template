@@ -9,6 +9,7 @@ dependencies {
     api(project(":application"))
     api(libs.nothingeats.platform.http)
     api(libs.nothingeats.platform.persistence)
+    api(libs.nothingeats.ktor.posthog)
     implementation(libs.exposed.java.time)
 
     testImplementation(testFixtures(project(":application")))
