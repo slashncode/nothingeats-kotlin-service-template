@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -16,11 +17,18 @@ jobs:
     uses: slashncode/nothingeats-ci/.github/workflows/kotlin.yml@main
     permissions:
       contents: write # dependency graph submission on main
-      packages: write # push the image to GHCR
-      id-token: write # keyless cosign signing
     with:
       verify-image: true
-      push-image: false # scripts/init-service.sh switches this on for real services
+
+  # Services push a signed image on main; the template itself only verifies that it builds.
+  image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository != 'slashncode/nothingeats-kotlin-service-template'
+    needs: kotlin
+    uses: slashncode/nothingeats-ci/.github/workflows/kotlin-image.yml@main
+    permissions:
+      contents: read
+      packages: write # push the image to GHCR
+      id-token: write # keyless cosign signing
 
   codeql:
     uses: slashncode/nothingeats-ci/.github/workflows/codeql.yml@main

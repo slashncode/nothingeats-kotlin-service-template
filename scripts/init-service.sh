@@ -24,7 +24,4 @@ grep -rlE 'nothingeats[.-]example' . \
         perl -pi -e "s/nothingeats\.example/nothingeats.$context/g; s/nothingeats-example-service/nothingeats-$context-service/g" "$file"
     done
 
-# Real services push their image on main; the template only verifies it builds.
-perl -pi -e "s/push-image: false.*/push-image: true/" .github/workflows/ci.yml
-
 echo "Initialised nothingeats-$context-service. Next: replace the Item example with the real domain."
