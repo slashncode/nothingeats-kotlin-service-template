@@ -32,6 +32,9 @@ export DATABASE__URL=jdbc:postgresql://localhost:15432/example DATABASE__USER=ex
 ./gradlew :app:run --args=migrate   # apply migrations
 ./gradlew :app:run                  # serve on :8080, readable logs
 
+# In the k3d cluster, from the hub repo: Flux steps aside, Tilt rebuilds and redeploys on every change
+just dev <context>-service           # stop with: just dev-stop <context>-service
+
 ./gradlew :app:jibDockerBuild -Djib.from.platforms=linux/arm64   # local image
 ```
 
