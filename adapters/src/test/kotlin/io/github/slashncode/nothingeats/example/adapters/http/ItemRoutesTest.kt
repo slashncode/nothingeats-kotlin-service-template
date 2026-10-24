@@ -8,8 +8,10 @@ import io.github.slashncode.nothingeats.platform.core.lifecycle.Readiness
 import io.github.slashncode.nothingeats.platform.http.PlatformJson
 import io.github.slashncode.nothingeats.platform.http.Problem
 import io.github.slashncode.nothingeats.platform.http.installPlatform
+import io.github.slashncode.nothingeats.platform.testing.TestTokens
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -24,19 +26,25 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import java.time.Clock
 
+private val tokens = TestTokens()
+
 private fun itemsApi(block: suspend ApplicationTestBuilder.() -> Unit) =
     testApplication {
         val items = InMemoryItemRepository()
         val routes = ItemRoutes(CreateItem(items, Clock.systemUTC()), GetItem(items))
         application {
-            installPlatform(Readiness(), HealthChecks(emptySet()))
+            installPlatform(Readiness(), HealthChecks(emptySet()), tokens.jwtAuth)
             routing { with(routes) { register() } }
         }
         block()
     }
 
-private suspend fun ApplicationTestBuilder.create(name: String): HttpResponse =
+private suspend fun ApplicationTestBuilder.create(
+    name: String,
+    token: String? = tokens.accessToken(),
+): HttpResponse =
     client.post("/api/example/v1/items") {
+        token?.let { bearerAuth(it) }
         contentType(ContentType.Application.Json)
         setBody("""{"name":"$name"}""")
     }
@@ -67,6 +75,12 @@ class ItemRoutesTest :
                 val conflict = create("Phantom Pizza")
                 conflict.status shouldBe HttpStatusCode.Conflict
                 conflict.problem().code shouldBe "ITEM_NAME_TAKEN"
+            }
+        }
+
+        test("creating needs a token, reading does not") {
+            itemsApi {
+                create("Phantom Pizza", token = null).status shouldBe HttpStatusCode.Unauthorized
             }
         }
 

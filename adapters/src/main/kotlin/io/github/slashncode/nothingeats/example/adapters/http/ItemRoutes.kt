@@ -7,6 +7,8 @@ import io.github.slashncode.nothingeats.example.domain.ItemId
 import io.github.slashncode.nothingeats.platform.core.error.AppError
 import io.github.slashncode.nothingeats.platform.core.error.ErrorCode
 import io.github.slashncode.nothingeats.platform.http.HttpRoutes
+import io.github.slashncode.nothingeats.platform.http.auth.authenticated
+import io.github.slashncode.nothingeats.platform.http.auth.public
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
@@ -39,15 +41,19 @@ class ItemRoutes(
 ) : HttpRoutes {
     override fun Route.register() {
         route("/api/example/v1/items") {
-            post {
-                val item = createItem(call.receive<CreateItemRequest>().name)
-                call.response.header(HttpHeaders.Location, "/api/example/v1/items/${item.id}")
-                call.respond(HttpStatusCode.Created, item.toResponse())
+            authenticated {
+                post {
+                    val item = createItem(call.receive<CreateItemRequest>().name)
+                    call.response.header(HttpHeaders.Location, "/api/example/v1/items/${item.id}")
+                    call.respond(HttpStatusCode.Created, item.toResponse())
+                }
             }
-            get("/{id}") {
-                val raw = call.parameters["id"].orEmpty()
-                val id = parseId(raw) ?: throw AppError.NotFound(ErrorCode("ITEM_NOT_FOUND"), "Item $raw does not exist")
-                call.respond(getItem(id).toResponse())
+            public {
+                get("/{id}") {
+                    val raw = call.parameters["id"].orEmpty()
+                    val id = parseId(raw) ?: throw AppError.NotFound(ErrorCode("ITEM_NOT_FOUND"), "Item $raw does not exist")
+                    call.respond(getItem(id).toResponse())
+                }
             }
         }
     }
