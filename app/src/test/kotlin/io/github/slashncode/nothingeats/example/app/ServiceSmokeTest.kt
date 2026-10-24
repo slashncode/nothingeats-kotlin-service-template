@@ -54,12 +54,12 @@ class ServiceSmokeTest :
             try {
                 get("$baseUrl/health/ready").statusCode() shouldBe 200
 
-                val created = post("$baseUrl/api/v1/items", """{"name":"Phantom Pizza"}""")
+                val created = post("$baseUrl/api/example/v1/items", """{"name":"Phantom Pizza"}""")
                 created.statusCode() shouldBe 201
                 val location = created.headers().firstValue("Location").get()
 
                 get("$baseUrl$location").body() shouldContain "Phantom Pizza"
-                post("$baseUrl/api/v1/items", """{"name":"Phantom Pizza"}""").statusCode() shouldBe 409
+                post("$baseUrl/api/example/v1/items", """{"name":"Phantom Pizza"}""").statusCode() shouldBe 409
             } finally {
                 service.lifecycle.stop()
             }

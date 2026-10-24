@@ -36,7 +36,7 @@ private fun itemsApi(block: suspend ApplicationTestBuilder.() -> Unit) =
     }
 
 private suspend fun ApplicationTestBuilder.create(name: String): HttpResponse =
-    client.post("/api/v1/items") {
+    client.post("/api/example/v1/items") {
         contentType(ContentType.Application.Json)
         setBody("""{"name":"$name"}""")
     }
@@ -51,9 +51,9 @@ class ItemRoutesTest :
 
                 created.status shouldBe HttpStatusCode.Created
                 val item = PlatformJson.decodeFromString(ItemResponse.serializer(), created.bodyAsText())
-                created.headers[HttpHeaders.Location] shouldBe "/api/v1/items/${item.id}"
+                created.headers[HttpHeaders.Location] shouldBe "/api/example/v1/items/${item.id}"
 
-                val fetched = client.get("/api/v1/items/${item.id}")
+                val fetched = client.get("/api/example/v1/items/${item.id}")
                 fetched.status shouldBe HttpStatusCode.OK
                 PlatformJson.decodeFromString(ItemResponse.serializer(), fetched.bodyAsText()) shouldBe item
             }
@@ -72,8 +72,8 @@ class ItemRoutesTest :
 
         test("malformed and unknown ids are not found") {
             itemsApi {
-                client.get("/api/v1/items/not-a-uuid").problem().code shouldBe "ITEM_NOT_FOUND"
-                client.get("/api/v1/items/0198f4a2-0000-7000-8000-000000000000").status shouldBe HttpStatusCode.NotFound
+                client.get("/api/example/v1/items/not-a-uuid").problem().code shouldBe "ITEM_NOT_FOUND"
+                client.get("/api/example/v1/items/0198f4a2-0000-7000-8000-000000000000").status shouldBe HttpStatusCode.NotFound
             }
         }
     })

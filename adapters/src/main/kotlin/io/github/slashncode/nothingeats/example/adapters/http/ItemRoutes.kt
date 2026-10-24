@@ -38,10 +38,10 @@ class ItemRoutes(
     private val getItem: GetItem,
 ) : HttpRoutes {
     override fun Route.register() {
-        route("/api/v1/items") {
+        route("/api/example/v1/items") {
             post {
                 val item = createItem(call.receive<CreateItemRequest>().name)
-                call.response.header(HttpHeaders.Location, "/api/v1/items/${item.id}")
+                call.response.header(HttpHeaders.Location, "/api/example/v1/items/${item.id}")
                 call.respond(HttpStatusCode.Created, item.toResponse())
             }
             get("/{id}") {

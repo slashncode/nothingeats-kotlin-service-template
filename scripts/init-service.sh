@@ -21,7 +21,7 @@ done
 grep -rlE 'nothingeats[.-]example' . \
     --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build --exclude-dir=.kotlin --exclude=init-service.sh |
     while read -r file; do
-        perl -pi -e "s/nothingeats\.example/nothingeats.$context/g; s/nothingeats-example-service/nothingeats-$context-service/g" "$file"
+        perl -pi -e "s/nothingeats\.example/nothingeats.$context/g; s/nothingeats-example-service/nothingeats-$context-service/g; s#/api/example/#/api/$context/#g" "$file"
     done
 
 echo "Initialised nothingeats-$context-service. Next: replace the Item example with the real domain."
