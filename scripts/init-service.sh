@@ -24,4 +24,7 @@ grep -rlE 'nothingeats[.-]example' . \
         perl -pi -e "s/nothingeats\.example/nothingeats.$context/g; s/nothingeats-example-service/nothingeats-$context-service/g; s#/api/example/#/api/$context/#g" "$file"
     done
 
+# The new package name changes the import order; let ktlint sort it instead of failing the build.
+./gradlew ktlintFormat --quiet
+
 echo "Initialised nothingeats-$context-service. Next: replace the Item example with the real domain."
