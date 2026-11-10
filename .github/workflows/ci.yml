@@ -14,7 +14,7 @@ permissions: {}
 
 jobs:
   kotlin:
-    uses: slashncode/nothingeats-ci/.github/workflows/kotlin.yml@a95a0eef7cece41239457e413fb6bda60f2fb6ff # main
+    uses: slashncode/nothingeats-ci/.github/workflows/kotlin.yml@d35251ff0c5bbc24cd4fd53bfb9342d73bdebd25 # main
     permissions:
       contents: write # dependency graph submission on main
     with:
@@ -25,21 +25,21 @@ jobs:
   image:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && github.repository != 'slashncode/nothingeats-kotlin-service-template'
     needs: kotlin
-    uses: slashncode/nothingeats-ci/.github/workflows/kotlin-image.yml@a95a0eef7cece41239457e413fb6bda60f2fb6ff # main
+    uses: slashncode/nothingeats-ci/.github/workflows/kotlin-image.yml@d35251ff0c5bbc24cd4fd53bfb9342d73bdebd25 # main
     permissions:
       contents: read
       packages: write # push the image to GHCR
       id-token: write # keyless cosign signing
 
   codeql:
-    uses: slashncode/nothingeats-ci/.github/workflows/codeql.yml@a95a0eef7cece41239457e413fb6bda60f2fb6ff # main
+    uses: slashncode/nothingeats-ci/.github/workflows/codeql.yml@d35251ff0c5bbc24cd4fd53bfb9342d73bdebd25 # main
     permissions:
       contents: read
       security-events: write
 
   pr:
     if: github.event_name == 'pull_request'
-    uses: slashncode/nothingeats-ci/.github/workflows/pr-hygiene.yml@a95a0eef7cece41239457e413fb6bda60f2fb6ff # main
+    uses: slashncode/nothingeats-ci/.github/workflows/pr-hygiene.yml@d35251ff0c5bbc24cd4fd53bfb9342d73bdebd25 # main
     permissions:
       contents: read
       pull-requests: write
